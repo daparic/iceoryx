@@ -17,7 +17,7 @@
 workspace(name = "org_eclipse_iceoryx")
 
 # Load C/C++test dependency
-local_repository(name = "cpptest", path = "/home/mirek/cpptest-coverage")
+# local_repository(name = "cpptest", path = "/home/dx/cpptest-coverage")
 
 # Load iceoryx dependencies
 load("//bazel:load_repositories.bzl", "load_repositories")

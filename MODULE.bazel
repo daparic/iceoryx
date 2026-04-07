@@ -3,14 +3,8 @@ module(
     version = "2.95.5",
 )
 
-bazel_dep(
-        name = "cpptest",
-    )
-
-local_path_override(
-    module_name = "cpptest",
-    path = "/home/mirek/parasoft/cpptest-ct_2025_1",
-  )
+cpptest_ext = use_extension("//bazel:cpptest_ext.bzl", "cpptest_ext")
+use_repo(cpptest_ext, "cpptest")
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "cpptoml", version = "0.1.1")

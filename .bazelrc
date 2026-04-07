@@ -1,5 +1,5 @@
 common --incompatible_disallow_empty_glob=false
-common --enable_bzlmod
+# --enable_bzlmod removed in Bazel 7+; bzlmod is on by default
 build --enable_platform_specific_config
 build:linux --cxxopt="-std=c++17"
 build:macos --cxxopt="-std=c++17"
