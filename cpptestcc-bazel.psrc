@@ -17,11 +17,11 @@ cpptestcc.compiler gcc_13-64
 
 # === COVERAGE METRICS ===
 
-cpptestcc.line_coverage true
-cpptestcc.function_coverage false
-cpptestcc.statement_coverage false
-cpptestcc.block_coverage false
-cpptestcc.decision_coverage true
+cpptestcc.lineCoverage true
+cpptestcc.functionCoverage false
+cpptestcc.statementCoverage false
+cpptestcc.blockCoverage false
+cpptestcc.decisionCoverage true
 cpptestcc.simpleConditionCoverage false
 cpptestcc.mcdcCoverage false
 cpptestcc.callCoverage false
