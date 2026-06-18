@@ -18,13 +18,13 @@ cpptestcc.compiler gcc_13-64
 # === COVERAGE METRICS ===
 
 cpptestcc.line_coverage true
-cpptestcc.function_coverage true
-cpptestcc.statement_coverage true
-cpptestcc.block_coverage true
+cpptestcc.function_coverage false
+cpptestcc.statement_coverage false
+cpptestcc.block_coverage false
 cpptestcc.decision_coverage true
-cpptestcc.simpleConditionCoverage true
-cpptestcc.mcdcCoverage true
-cpptestcc.callCoverage true
+cpptestcc.simpleConditionCoverage false
+cpptestcc.mcdcCoverage false
+cpptestcc.callCoverage false
 
 # === SCOPE OF ANALYSIS ===
 

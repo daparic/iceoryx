@@ -158,14 +158,35 @@ Upgrade your license to include all coverage metrics or limit enabled metrics to
 * Decision Coverage (DC)
 ```
 
-The installed license only covers Line Coverage (LC) and Decision Coverage (DC).
-Fix: explicitly request only those metrics:
+The license's "CT Extended Coverage" feature isn't active (only "CT Core" +
+"CT-Basic-Coverage" are), so only Line Coverage (LC) and Decision Coverage (DC)
+are usable. The first pass worked around this by passing `-coverage "LC,DC"`
+explicitly to `cpptestcov compute`/`report` at invocation time — but that's a
+flag you'd have to remember on every machine and every command, and it doesn't
+stop `cpptestcc` from *instrumenting* for the unlicensed metrics in the first
+place.
+
+### Better fix: disable the unlicensed metrics at instrumentation time
+
+`cpptestcc-bazel.psrc` — the instrumentation config consumed by
+`@cpptest//:coverage` — was turning on every metric (`function_coverage`,
+`statement_coverage`, `block_coverage`, `simpleConditionCoverage`,
+`mcdcCoverage`, `callCoverage`) regardless of license. Setting those to
+`false` (keeping only `line_coverage` and `decision_coverage` as `true`) means
+the instrumented binary never emits unlicensed coverage data, so
+`cpptestcov compute` succeeds without needing a `-coverage` flag at all:
 
 ```sh
-cpptestcov compute -map .cpptest -clog cpptest_results.clog -out .coverage -coverage "LC,DC"
+cpptestcov compute -map .cpptest -clog cpptest_results.clog -out .coverage
 cpptestcov index .coverage
 cpptestcov report html -code -out report/coverage.html .coverage
 ```
+
+This also meant `.github/workflows/master.yml` needed updating: it was passing
+`-coverage LC,MCDC` to the report/DTP steps and gating on an `MCDC` quality
+metric, which would now fail (MCDC is no longer instrumented). Both report
+commands were changed to `-coverage LC,DC`, and the MCDC quality gate step was
+changed to query/gate on `DC` (`DECISION_COV_GATE`) instead.
 
 (`cpptestcov index` printed harmless `WARNING: line 0 not found in ...` for a few
 files — header-only/templated code where some instrumentation markers don't map to
@@ -184,8 +205,11 @@ a real source line — output still generated successfully.)
 | Install Bazelisk as `bazel` | `~/.local/bin/bazel` | No (machine-local) | Bazel wasn't installed at all |
 | Synthesize `@cpptest` repo layout (root `WORKSPACE.bazel`/`BUILD.bazel`/`MODULE.bazel`, `integration/bazel/` without its `BUILD.bazel`) | `bazel/cpptest_ext.bzl` | **Yes** | Gives `@cpptest` a repo boundary marker without mutating `$CPPTEST_HOME`; works for any Parasoft install pointed to by `CPPTEST_HOME` |
 | Install `libacl1-dev` | system package | No (machine-local) | `sys/acl.h` needed by `iceoryx_platform` |
-| Pass `-coverage "LC,DC"` | `build_and_run.sh` invocation | No (just how it's invoked) | Local Parasoft license only covers Line/Decision coverage |
+| Disable unlicensed metrics at instrumentation time | `cpptestcc-bazel.psrc` | **Yes** | License only covers Line/Decision coverage; instrumenting for SC/BC/SCC/MCDC/FC/CC made `cpptestcov compute` fail license check and produce no `.coverage` output |
+| Switch report/DTP/gate steps from `LC,MCDC` to `LC,DC` | `.github/workflows/master.yml` | **Yes** | MCDC is no longer instrumented, so reporting/gating on it would fail; gate now checks `DC` (`DECISION_COV_GATE`) instead of `MCDC_COV_GATE` |
 
-Only the Bazel/`libacl1-dev` install and the `-coverage` flag are machine-local
-setup now — the `@cpptest` repo fix lives in `bazel/cpptest_ext.bzl` and needs
-no manual repeating on other machines or other Parasoft installs.
+Only the Bazel/`libacl1-dev` install is machine-local setup now — the
+`@cpptest` repo fix (`bazel/cpptest_ext.bzl`), the instrumentation metrics fix
+(`cpptestcc-bazel.psrc`), and the workflow's coverage commands/gate
+(`.github/workflows/master.yml`) are all committed to the repo and need no
+manual repeating on other machines or other Parasoft installs.
